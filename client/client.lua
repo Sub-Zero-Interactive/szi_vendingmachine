@@ -35,7 +35,7 @@ AddEventHandler('onClientResourceStart', function (resourceName)
 	for k,v in pairs(Config.VendingMachineModels) do 
 	    if Config.FivemTarget then
 	        exports['fivem-target']:AddTargetModel({
-	    	    name = 'robbery',
+	    	    name = 'vending-robbery',
 	    	    label = 'Vending Machine',
 	    	    icon = 'fas fa-mug-hot',
 	    	    model = GetHashKey(v.prop),
