@@ -43,14 +43,14 @@ ESX.RegisterServerCallback('szi_vendingmachine:canRob', function(source, cb, pos
 	    end
 	end
     
-	if (itemcount == #(Config.RequiredItems)) and (police >= Config.PoliceRequired) then
+	if (itemcount == #(Config.RequiredItems)) and (police >= GetOptions("PoliceRequired")) then
 	    cb(true)
 	    itemcount = 0
 	else
 	    cb(false)
 	    itemcount = 0
-		if police < Config.PoliceRequired then
-			TriggerClientEvent('esx:showNotification', source, _U('min_police', Config.PoliceRequired))
+		if police < GetOptions("PoliceRequired") then
+			TriggerClientEvent('esx:showNotification', source, _U('min_police', GetOptions("PoliceRequired")))
 		end
 	end
 end)
@@ -103,13 +103,12 @@ RegisterServerEvent('szi_vendingmachine:buyItem')
 AddEventHandler('szi_vendingmachine:buyItem', function(itemName, price, amount)
 	local xPlayer = ESX.GetPlayerFromId(source)
 
-	if xPlayer.getMoney() >= price and xPlayer.canCarryItem(itemName, amount) then
-		xPlayer.addInventoryItem(itemName, amount)
+	if xPlayer.getMoney() >= price then
 		xPlayer.removeMoney(price)
+		xPlayer.addInventoryItem(itemName, amount)
+		xPlayer.showNotification(_U('bought', amount, itemName, ESX.Math.GroupDigits(price)))
 	elseif xPlayer.getMoney() <= price then
 		xPlayer.showNotification('you don\'t have enough money!')
-	else
-		xPlayer.showNotification('You cannot carry anything else')
 	end
 end)
 
