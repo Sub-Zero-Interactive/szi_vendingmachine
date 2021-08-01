@@ -3,10 +3,12 @@ This is a script that allows you to buy Soda's & rob vending machines using five
 
 ## Requirements
 - [es_extended](https://github.com/esx-framework/es_extended/tree/legacy)
-- [cd_keymaster](https://github.com/dsheedes/cd_keymaster)
 - [fivem-target](https://github.com/meta-hub/fivem-target) OR [bt-target](https://github.com/brentN5/bt-target)
 - [mythic_progbar](https://github.com/HalCroves/mythic_progbar)
+
+## Optional
 - [mythic_notify](https://github.com/JayMontana36/mythic_notify)
+- [cd_keymaster](https://github.com/dsheedes/cd_keymaster)
 
 ## Download & Installation
 
