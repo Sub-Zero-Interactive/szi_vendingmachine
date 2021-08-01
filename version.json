@@ -1,5 +1,5 @@
 {
     "version": "main",
-    "commit" : "1.1",
-    "changelog": "Added new minigame"
+    "commit" : "1.2",
+    "changelog": "Updated Config & made some dependencies optional"
 }
