@@ -39,7 +39,7 @@ Config.Dependencies = {
     },
     {
         CDKeymaster = false, -- Set to 'true' if you are using cd_keymaster
-        RobbingTime = 10000 -- This is how long it takes to wait to "rob" the machine in ms, only used if Mhacking is false
+        RobbingTime = 10000 -- This is how long it takes to wait to "rob" the machine in ms, only used if CDKeymaster is false
     }
 }
 
