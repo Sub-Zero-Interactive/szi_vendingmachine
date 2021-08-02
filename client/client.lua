@@ -24,8 +24,8 @@ local CurrentCoords, started = nil, nil
 local taken = 0
 
 Citizen.CreateThread(function()
-	while ESX == nil do
-		TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
+	while QBCore == nil do
+		TriggerEvent('QBCore:GetObject', function(obj) QBCore = obj end)
 		Citizen.Wait(100)
 	end
 end)
@@ -44,7 +44,7 @@ AddEventHandler('onClientResourceStart', function (resourceName)
 	    	    options = {
 	    	        {
 	    		        name = 'rob',
-	    		        label = 'Rob Vending Machine'
+	    		        label = 'Steal'
 	    	        },
 	    	        {
 	    		        name = 'buy',
@@ -54,27 +54,23 @@ AddEventHandler('onClientResourceStart', function (resourceName)
 	    	vars = {}
 	        })
 	    else
-			local machines = {}
 	        for k,v in pairs(Config.VendingMachineModels) do 
-		        table.insert(machines,GetHashKey(v.prop))
-	 	    end
-		    Wait(5)
-		    exports['bt-target']:AddTargetModel(machines, {
-		    	options = {
-		    		{
-		    			event = 'szi_vendingmachine:startRobbing',
-		    			icon = 'fas fa-mug-hot',
-		    			label = 'Rob Vending Machine',
-		    		},
-					{
-					    event = 'szi_vendingmachine:buy',
-					    icon = 'fas fa-mug-hot',
-					    label = 'Buy Soda',
-				    }
-		    	},
-		    	job = {'all'},
-		    	distance = 1.5
-		    })
+				exports['qtarget']:AddTargetModel({v.prop}, {
+					options = {
+							{
+									event = "szi_vendingmachine:buy",
+									icon = "fas fa-coffee",
+									label = "Buy",
+							},
+							{
+								event = "szi_vendingmachine:startRobbing",
+								icon = "fas fa-coffee",
+								label = "Steal",
+						},
+					},
+					distance = 2.0
+			})			
+				end
 	    end
 	end    
 end)
@@ -130,7 +126,7 @@ function FinishRobbing(success)
         end
 		TaskPlayAnim(PlayerPedId(),buyanim.dictionary,buyanim.animation,1.0,1.0,-1,1,0,false,false,false)
 		cancontinue = true
-		ESX.ShowHelpNotification(_U('press_stop'))
+		QBCore.Functions.Notify(_U('press_stop'))
 		exports['mythic_progbar']:Progress({
 			name = 'using',
 			duration = GetOptions("RobTime") * 1000,
@@ -157,7 +153,7 @@ function FinishRobbing(success)
 		end)
 	else
 		if not (taken < GetOptions("MaxTake")) then
-		    ESX.ShowHelpNotification(_U('max_amount'))
+			QBCore.Functions.Notify(_U('max_amount'), "inform")
 		end
 		ClearPedTasks(PlayerPedId())
 		cancontinue = false
@@ -170,7 +166,7 @@ function StartRobbing(targetName, optionName, vars, entityHit)
 	if optionName and  optionName == 'rob' then
 	    if not startedRobbing then
 		    startedRobbing = true
-	        ESX.TriggerServerCallback('szi_vendingmachine:canRob', function(CanRob)
+				QBCore.Functions.TriggerCallback('szi_vendingmachine:canRob', function(CanRob)
 		        if CanRob then
 					local chance = math.random(GetOptions("MinChance"), GetOptions("MaxChance"))
 				    local pos = GetEntityCoords(PlayerPedId(),  true)
@@ -192,8 +188,8 @@ function StartRobbing(targetName, optionName, vars, entityHit)
 					    local CustomSettings = {
 					    	settings = {
 					    		handleEnd = true;  --Send a result message if true and callback when message closed or callback immediately without showing the message
-					    		speed = 10; --pixels / second
-					    		scoreWin = 1000; --Score to win
+					    		speed = 15; --pixels / second
+					    		scoreWin = 900; --Score to win
 					    		scoreLose = -150; --Lose if this score is reached
 					    		maxTime = 60000; --sec
 					    		maxMistake = 5; --How many missed keys can there be before losing
@@ -213,7 +209,7 @@ function StartRobbing(targetName, optionName, vars, entityHit)
 					    FinishRobbings(true)
 				    end
 		        else
-			        ESX.ShowHelpNotification(_U('cant_rob'), false, true, 2000)
+			        QBCore.Functions.Notify(_U('cant_rob'), "error")
 			        Wait(2000)
 			        hasStarted = false
 			        startedRobbing = false
@@ -240,7 +236,7 @@ AddEventHandler('szi_vendingmachine:notifyPolice', function(msg)
 	if GetDependency("MythicNotify") then 
         exports['mythic_notify']:DoHudText('error', msg)
 	else
-		ESX.ShowNotification(msg)
+		QBCore.Functions.Notify(msg, "inform")
 	end
 end)
 
