@@ -126,7 +126,7 @@ function FinishRobbing(success)
         end
 		TaskPlayAnim(PlayerPedId(),buyanim.dictionary,buyanim.animation,1.0,1.0,-1,1,0,false,false,false)
 		cancontinue = true
-		QBCore.Functions.Notify(_U('press_stop'))
+	--	QBCore.Functions.Notify(_U('press_stop'))
 		exports['mythic_progbar']:Progress({
 			name = 'using',
 			duration = GetOptions("RobTime") * 1000,
@@ -153,7 +153,7 @@ function FinishRobbing(success)
 		end)
 	else
 		if not (taken < GetOptions("MaxTake")) then
-			QBCore.Functions.Notify(_U('max_amount'), "inform")
+	--		QBCore.Functions.Notify(_U('max_amount'), "inform")
 		end
 		ClearPedTasks(PlayerPedId())
 		cancontinue = false
@@ -209,7 +209,7 @@ function StartRobbing(targetName, optionName, vars, entityHit)
 					    FinishRobbings(true)
 				    end
 		        else
-			        QBCore.Functions.Notify(_U('cant_rob'), "error")
+			      --  QBCore.Functions.Notify(_U('cant_rob'), "error")
 			        Wait(2000)
 			        hasStarted = false
 			        startedRobbing = false
@@ -236,7 +236,7 @@ AddEventHandler('szi_vendingmachine:notifyPolice', function(msg)
 	if GetDependency("MythicNotify") then 
         exports['mythic_notify']:DoHudText('error', msg)
 	else
-		QBCore.Functions.Notify(msg, "inform")
+--		QBCore.Functions.Notify(msg, "inform")
 	end
 end)
 

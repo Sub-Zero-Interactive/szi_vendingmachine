@@ -19,25 +19,25 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 --]]
-ESX = nil
+QBCore = nil
 
-TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
+TriggerEvent('QBCore:GetObject', function(obj) QBCore = obj end)
 
-ESX.RegisterServerCallback('szi_vendingmachine:canRob', function(source, cb, pos)
-	local xPlayer = ESX.GetPlayerFromId(source)
-	local xPlayers = ESX.GetPlayers()
+QBCore.RegisterServerCallback('szi_vendingmachine:canRob', function(source, cb, pos)
+	local xPlayer = QBCore.Functions.GetPlayer(source)
+	local xPlayers = QBCore.Functions.GetPlayers()
 	local itemcount = 0
 	local police = 0
 
 	for i=1, #xPlayers, 1 do
-		local xPlayer = ESX.GetPlayerFromId(xPlayers[i])
+		local xPlayer = QBCore.Functions.GetPlayer(xPlayers[i])
 		if xPlayer.getJob().name == 'police' then
 			police = police + 1
 		end
 	end
 
 	for k,v in pairs(Config.RequiredItems) do
-        local item =  xPlayer.getInventoryItem(v.name)
+        local item =  xPlayer.Functions.GetItemByName(v.name)
 	    if (item) and (item.count >= v.quantity) then
 	    	itemcount = itemcount + 1
 	    end
@@ -50,50 +50,47 @@ ESX.RegisterServerCallback('szi_vendingmachine:canRob', function(source, cb, pos
 	    cb(false)
 	    itemcount = 0
 		if police < GetOptions("PoliceRequired") then
-			TriggerClientEvent('esx:showNotification', source, _U('min_police', GetOptions("PoliceRequired")))
+	--		TriggerClientEvent('QBCore:Notify', source, _U('min_police', GetOptions("PoliceRequired")))
 		end
 	end
 end)
 
 RegisterNetEvent("szi_vendingmachine:success")
 AddEventHandler('szi_vendingmachine:success', function(pos)
-	local xPlayer = ESX.GetPlayerFromId(source)
+	local xPlayer = QBCore.Functions.GetPlayer(source)
 	for k,v in pairs(Config.Rewards) do
         if (v.name ~= "money") and (v.name ~= "bank") and (v.name ~= "black_money") then
-		    if xPlayer.canCarryItem(v.name, v.amount) then
-    	    	xPlayer.addInventoryItem(v.name, v.amount)
-	    	else
-   	     	    xPlayer.showNotification(_U('no_room'))
-	    	end
+					 xPlayer.Functions.AddItem(v.name, v.amount)
+
         elseif (v.name == "bank") or (v.name == "black_money") then
-            xPlayer.addAccountMoney(v.name, v.amount)
+           xPlayer.Functions.AddMoney(v.name, v.amount)
 		elseif (v.name == "money") then
-            xPlayer.addMoney(v.amount)
+					xPlayer.Functions.AddMoney("cash", v.amount)
         end
 	end
 end)
 
 RegisterNetEvent("szi_vendingmachine:robSuccess")
 AddEventHandler('szi_vendingmachine:robSuccess', function(success)
-	local xPlayer = ESX.GetPlayerFromId(source)
+	local xPlayer = QBCore.Functions.GetPlayer(source)
 	if success then
 		for k,v in pairs(Config.RemoveItems) do
-   		 	xPlayer.removeInventoryItem(v.name, 1)
+			xPlayer.Functions.RemoveItem(v.name, 1)
 		end
 	end
 end)
 
 RegisterNetEvent('szi_vendingmachine:notifyPolice')
 AddEventHandler('szi_vendingmachine:notifyPolice', function(street1, street2, pos)
-    local xPlayers = ESX.GetPlayers()
+	local xPlayers = QBCore.Functions.GetPlayers()
     local startedRobbing = true
 
     if startedRobbing == true then
 		for i=1, #xPlayers, 1 do
-			local xPlayer = ESX.GetPlayerFromId(xPlayers[i])
-            if xPlayer.job.name == 'police' then
-                TriggerClientEvent('szi_vendingmachine:blip', xPlayers[i], pos.x, pos.y, pos.z)
-                TriggerClientEvent('szi_vendingmachine:notifyPolice', xPlayers[i], 'Robbery In Progress : Vending Machine | ' .. street1 .. " | " .. street2 .. ' ')
+			local xPlayer = QBCore.Functions.GetPlayer(xPlayers[i])
+      if xPlayer.job.name == 'police' then
+        TriggerClientEvent('szi_vendingmachine:blip', xPlayers[i], pos.x, pos.y, pos.z)
+        TriggerClientEvent('szi_vendingmachine:notifyPolice', xPlayers[i], 'Robbery In Progress : Vending Machine | ' .. street1 .. " | " .. street2 .. ' ')
 			end
 		end
 	end
@@ -101,14 +98,15 @@ end)
 
 RegisterServerEvent('szi_vendingmachine:buyItem')
 AddEventHandler('szi_vendingmachine:buyItem', function(itemName, price, amount)
-	local xPlayer = ESX.GetPlayerFromId(source)
+	local xPlayer = QBCore.Functions.GetPlayer(source)
 
-	if xPlayer.getMoney() >= price then
-		xPlayer.removeMoney(price)
-		xPlayer.addInventoryItem(itemName, amount)
-		xPlayer.showNotification(_U('bought', amount, itemName, ESX.Math.GroupDigits(price)))
+	if xPlayer.PlayerData.money['cash'] >= price then
+		xPlayer.Functions.RemoveMoney("cash", price)
+		xPlayer.Functions.AddItem(itemName, amount)
+		--TriggerClientEvent('QBCore:Notify', source, _U('bought', amount, itemName, ESX.Math.GroupDigits(price)))
+	--	xPlayer.showNotification()
 	elseif xPlayer.getMoney() <= price then
-		xPlayer.showNotification('you don\'t have enough money!')
+	--	xPlayer.showNotification('you don\'t have enough money!')
 	end
 end)
 

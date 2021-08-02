@@ -32,7 +32,7 @@ Config.VendingItems = {
 
 Config.Dependencies = {
     {
-        FivemTarget = false -- Set to 'true' if you are using fivem-target or 'false' for bt-target
+        FivemTarget = false -- Set to 'true' if you are using fivem-target or 'false' for qtarget
     },
     {
         MythicNotify = false -- Set to 'true' if you are using mythic_notify
