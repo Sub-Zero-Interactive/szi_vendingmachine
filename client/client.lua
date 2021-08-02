@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 --]]
-local hasStarted, startedRobbing, cancontinue = false, false, false
+local hasStarted, startedRobbing, cancontinue, opened = false, false, false, false
 local CurrentCoords, started = nil, nil
 local taken = 0
 
@@ -84,36 +84,58 @@ function GetAnim(action)
 end
 
 function OpenVendingMenu()
-	ESX.UI.Menu.CloseAll()
+if not opened then
+	FreezeEntityPosition(PlayerPedId(), true)
+	opened = true
+	local menu = MenuV:CreateMenu('Vending Machine', 'Buy An Item!', 'bottomright', 255, 0, 0)
 
-	local elements = {}
+	local menuButtons = {}
 	for k, v in pairs(Config.VendingItems) do
-	    table.insert(elements, {label = ('%s - <span style="color:green;">%s</span>'):format(v.name, ESX.Math.GroupDigits(v.price)), item = v.name, price = v.price, type = 'slider', value = 1, min = 1, max = 100})
+	menuButtons[k] = menu:AddButton({ icon = v.icon, label = v.label.. " - $".. v.price, value = v, description = v.description})
+	menuButtons[k]:On("select",function()
+	MenuV:CloseMenu(menu)
+  BuyAnim(v.itemname,v.label, v.price)
+end)
 	end
+	
 
-	ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'vending', {
-		title    = 'Vending Machine',
-		align    = 'bottom-right',
-		elements = elements
-	}, function(data, menu)
-		TriggerServerEvent('szi_vendingmachine:buyItem', data.current.item, data.current.price, data.current.value)
-		local buyanim = GetAnim("Buying")
-		RequestAnimDict(buyanim.dictionary)
-        while not HasAnimDictLoaded(buyanim.dictionary) do
-             Wait(10)
-        end
-		TaskPlayAnim(PlayerPedId(),buyanim.dictionary,buyanim.animation,1.0,1.0,-1,1,0,false,false,false)
-		Wait(5000)
+	MenuV:OpenMenu(menu)
+
+	menu:On('close', function(m)
+		FreezeEntityPosition(PlayerPedId(), false)
 		ClearPedTasks(PlayerPedId())
-	end, function(data, menu)
-		menu.close()
-	end)
+		opened = false
+end)
+			end
 end
 
 function FinishRobbings(success)
 	TriggerServerEvent('szi_vendingmachine:robSuccess', success)
 	FinishRobbing(success)
 	Cooldown(true)
+end
+
+function BuyAnim(name, label, price)
+	Wait(2)
+	local buyanim = GetAnim("Buying")
+	local pocketanim = GetAnim("Pocket")
+	RequestAnimDict(buyanim.dictionary)
+			while not HasAnimDictLoaded(buyanim.dictionary) do
+					 Wait(10)
+			end
+			RequestAnimDict(pocketanim.dictionary)
+			while not HasAnimDictLoaded(pocketanim.dictionary) do
+					 Wait(10)
+			end		
+	TaskPlayAnim(PlayerPedId(),buyanim.dictionary,buyanim.animation,1.0,1.0,-1,1,0,false,false,false)
+	Wait(3300)
+	TaskPlayAnim(PlayerPedId(),pocketanim.dictionary,pocketanim.animation,1.0,1.0,-1,1,0,false,false,false)
+	Wait(1000)
+	TriggerServerEvent('szi_vendingmachine:buyItem', name, label, price, 1)
+	ClearPedTasks(PlayerPedId())
+	FreezeEntityPosition(PlayerPedId(), false)
+	ClearPedTasks(PlayerPedId())
+	opened = false
 end
 
 function FinishRobbing(success)
@@ -126,7 +148,7 @@ function FinishRobbing(success)
         end
 		TaskPlayAnim(PlayerPedId(),buyanim.dictionary,buyanim.animation,1.0,1.0,-1,1,0,false,false,false)
 		cancontinue = true
-	--	QBCore.Functions.Notify(_U('press_stop'))
+		QBCore.Functions.Notify("Press [DEL] To Stop Stealing!")
 		exports['mythic_progbar']:Progress({
 			name = 'using',
 			duration = GetOptions("RobTime") * 1000,
@@ -153,7 +175,7 @@ function FinishRobbing(success)
 		end)
 	else
 		if not (taken < GetOptions("MaxTake")) then
-	--		QBCore.Functions.Notify(_U('max_amount'), "inform")
+			QBCore.Functions.Notify("There is Nothing Left To Steal!", "error")
 		end
 		ClearPedTasks(PlayerPedId())
 		cancontinue = false
@@ -167,7 +189,7 @@ function StartRobbing(targetName, optionName, vars, entityHit)
 	    if not startedRobbing then
 		    startedRobbing = true
 				QBCore.Functions.TriggerCallback('szi_vendingmachine:canRob', function(CanRob)
-		        if CanRob then
+		      if CanRob then
 					local chance = math.random(GetOptions("MinChance"), GetOptions("MaxChance"))
 				    local pos = GetEntityCoords(PlayerPedId(),  true)
                     local s1, s2 = GetStreetNameAtCoord( pos.x, pos.y, pos.z, Citizen.PointerValueInt(), Citizen.PointerValueInt() )
@@ -181,7 +203,7 @@ function StartRobbing(targetName, optionName, vars, entityHit)
 					end
 					TaskPlayAnim(PlayerPedId(),robanim.dictionary,robanim.animation,1.0,1.0,-1,1,0,false,false,false)
 					if chance <= GetOptions("Chance") then
-				        TriggerServerEvent('szi_vendingmachine:notifyPolice', street1, street2, pos)
+				      TriggerServerEvent('szi_vendingmachine:notifyPolice', street1, street2, pos)
 					end
 
 					if GetDependency("CDKeymaster") then
@@ -209,7 +231,7 @@ function StartRobbing(targetName, optionName, vars, entityHit)
 					    FinishRobbings(true)
 				    end
 		        else
-			      --  QBCore.Functions.Notify(_U('cant_rob'), "error")
+			        QBCore.Functions.Notify("You Cannot Steal!", "error")
 			        Wait(2000)
 			        hasStarted = false
 			        startedRobbing = false
@@ -236,7 +258,7 @@ AddEventHandler('szi_vendingmachine:notifyPolice', function(msg)
 	if GetDependency("MythicNotify") then 
         exports['mythic_notify']:DoHudText('error', msg)
 	else
---		QBCore.Functions.Notify(msg, "inform")
+		QBCore.Functions.Notify(msg)
 	end
 end)
 

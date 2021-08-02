@@ -11,28 +11,48 @@ Config.RequiredItems = {
 
 
 Config.RemoveItems = {
-    -- {
-    --     name = 'lockpick' -- Uncomment these 3 lines to remove the item after robbing the vending machine
-    -- }
+    {
+        name = 'lockpick' -- Uncomment these 3 lines to remove the item after robbing the vending machine
+    }
 }
 
 Config.Rewards = {
     {
-        name = 'soda', -- Choices are money, bank, black_money or an item name
+        name = 'water_bottle', -- Choices are money, bank, black_money or an item name
+        label = "Water Bottle",
         amount = math.random(1, 3) -- The random amount you take per cycle (MaxTake is how many times it cycles max)
-    }
+    },
+    {
+        name = 'coffee', -- Choices are money, bank, black_money or an item name
+        label = "Coffee",
+        amount = math.random(1, 3) -- The random amount you take per cycle (MaxTake is how many times it cycles max)
+    },
+    {
+        name = 'money', -- Choices are money, bank, black_money or an item name
+        amount = math.random(5, 20) -- The random amount you take per cycle (MaxTake is how many times it cycles max)
+    },
 }
 
 Config.VendingItems = {
     {
-        name = "soda",
+        itemname = "water_bottle",
+        label = "Water Bottle",
+        icon = "🍼",
+        description = "Ice Cold Beverage!",
         price = 5
-    }
+    },
+    {
+        itemname = "coffee",
+        label = "Coffee",
+        icon = "☕",
+        description = "Creamy Hot Beverage!",
+        price = 6
+    },
 }
 
 Config.Dependencies = {
     {
-        FivemTarget = false -- Set to 'true' if you are using fivem-target or 'false' for qtarget
+        FivemTarget = true -- Set to 'true' if you are using fivem-target or 'false' for qtarget
     },
     {
         MythicNotify = false -- Set to 'true' if you are using mythic_notify
@@ -45,15 +65,14 @@ Config.Dependencies = {
 
 Config.Options = {
     {
-        PoliceRequired = 1, -- Amount of Police required to hack an ATM
+        PoliceRequired = 0, -- Amount of Police required to hack an ATM
         BlipTimer = 45, -- Blip timer  until removed in seconds
-        PhoneModel = -1038739674, -- The Phone model prop when hacking
         CooldownTime = 300, -- Cooldown in Seconds before someone can rob an ATM
         MaxChance = 100, -- Max number the chance can go up to (default 100)
         Chance = 100, -- The % Chance of notifying police when a robbery is started (25 = 25%)
         MinChance = 1, -- Minimum number the chance can be (Keep at 1 unless you know what you are doing)
         RobTime = 10, -- How long it takes to rob the atm per cycle in seconds
-        MaxTake = 3 -- The amount of times the "Cycle" can happen (links with reward ammount)
+        MaxTake = 1 -- The amount of times the "Cycle" can happen (links with reward ammount)
     }
 }
 
@@ -65,8 +84,13 @@ Config.Animations = {
     },
     {
         name = "Buying",
-        dictionary = "amb@medic@standing@kneel@base",
-        animation = "base"       
+        dictionary = "mini@sprunk",
+        animation = "plyr_buy_drink_pt1"       
+    },
+    {
+        name = "Pocket",
+        dictionary = "mp_common_miss",
+        animation = "put_away_coke"       
     }
 }
 

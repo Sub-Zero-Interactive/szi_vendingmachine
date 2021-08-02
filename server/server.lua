@@ -19,11 +19,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 --]]
-QBCore = nil
-
 TriggerEvent('QBCore:GetObject', function(obj) QBCore = obj end)
 
-QBCore.RegisterServerCallback('szi_vendingmachine:canRob', function(source, cb, pos)
+QBCore.Functions.CreateCallback('szi_vendingmachine:canRob', function(source, cb, pos)
 	local xPlayer = QBCore.Functions.GetPlayer(source)
 	local xPlayers = QBCore.Functions.GetPlayers()
 	local itemcount = 0
@@ -31,14 +29,14 @@ QBCore.RegisterServerCallback('szi_vendingmachine:canRob', function(source, cb, 
 
 	for i=1, #xPlayers, 1 do
 		local xPlayer = QBCore.Functions.GetPlayer(xPlayers[i])
-		if xPlayer.getJob().name == 'police' then
+		if xPlayer.PlayerData.job.name == 'police' then
 			police = police + 1
 		end
 	end
 
 	for k,v in pairs(Config.RequiredItems) do
         local item =  xPlayer.Functions.GetItemByName(v.name)
-	    if (item) and (item.count >= v.quantity) then
+	    if (item) and (item.amount >= v.quantity) then
 	    	itemcount = itemcount + 1
 	    end
 	end
@@ -50,7 +48,7 @@ QBCore.RegisterServerCallback('szi_vendingmachine:canRob', function(source, cb, 
 	    cb(false)
 	    itemcount = 0
 		if police < GetOptions("PoliceRequired") then
-	--		TriggerClientEvent('QBCore:Notify', source, _U('min_police', GetOptions("PoliceRequired")))
+			TriggerClientEvent('QBCore:Notify', source, "There Needs to be Atleast".. GetOptions("PoliceRequired").. " Police Online!")
 		end
 	end
 end)
@@ -58,16 +56,17 @@ end)
 RegisterNetEvent("szi_vendingmachine:success")
 AddEventHandler('szi_vendingmachine:success', function(pos)
 	local xPlayer = QBCore.Functions.GetPlayer(source)
-	for k,v in pairs(Config.Rewards) do
+	local v = Config.Rewards[math.random(1, #(Config.Rewards))]
         if (v.name ~= "money") and (v.name ~= "bank") and (v.name ~= "black_money") then
 					 xPlayer.Functions.AddItem(v.name, v.amount)
-
+					 TriggerClientEvent('QBCore:Notify', source, "Stole ".. v.amount .. " ".. v.label, "success")
         elseif (v.name == "bank") or (v.name == "black_money") then
+					TriggerClientEvent('QBCore:Notify', source, "Stole $".. v.amount, "success")
            xPlayer.Functions.AddMoney(v.name, v.amount)
 		elseif (v.name == "money") then
 					xPlayer.Functions.AddMoney("cash", v.amount)
+					iggerClientEvent('QBCore:Notify', source, "Stole $".. v.amount, "success")
         end
-	end
 end)
 
 RegisterNetEvent("szi_vendingmachine:robSuccess")
@@ -88,7 +87,7 @@ AddEventHandler('szi_vendingmachine:notifyPolice', function(street1, street2, po
     if startedRobbing == true then
 		for i=1, #xPlayers, 1 do
 			local xPlayer = QBCore.Functions.GetPlayer(xPlayers[i])
-      if xPlayer.job.name == 'police' then
+      if xPlayer.PlayerData.job.name == 'police' then
         TriggerClientEvent('szi_vendingmachine:blip', xPlayers[i], pos.x, pos.y, pos.z)
         TriggerClientEvent('szi_vendingmachine:notifyPolice', xPlayers[i], 'Robbery In Progress : Vending Machine | ' .. street1 .. " | " .. street2 .. ' ')
 			end
@@ -97,16 +96,15 @@ AddEventHandler('szi_vendingmachine:notifyPolice', function(street1, street2, po
 end)
 
 RegisterServerEvent('szi_vendingmachine:buyItem')
-AddEventHandler('szi_vendingmachine:buyItem', function(itemName, price, amount)
+AddEventHandler('szi_vendingmachine:buyItem', function(itemName,label, price, amount)
 	local xPlayer = QBCore.Functions.GetPlayer(source)
 
 	if xPlayer.PlayerData.money['cash'] >= price then
 		xPlayer.Functions.RemoveMoney("cash", price)
-		xPlayer.Functions.AddItem(itemName, amount)
-		--TriggerClientEvent('QBCore:Notify', source, _U('bought', amount, itemName, ESX.Math.GroupDigits(price)))
-	--	xPlayer.showNotification()
+		xPlayer.Functions.AddItem(itemName, 1)
+		TriggerClientEvent('QBCore:Notify', source, ("Bought ".. label .. " - $".. price))
 	elseif xPlayer.getMoney() <= price then
-	--	xPlayer.showNotification('you don\'t have enough money!')
+		TriggerClientEvent('QBCore:Notify', source, "you don\'t have enough money!")
 	end
 end)
 
