@@ -70,7 +70,6 @@ AddEventHandler('szi_vendingmachine:success', function(pos)
 		elseif (v.name == "money") then
             xPlayer.addMoney(v.amount)
         end
-	end
 end)
 
 RegisterNetEvent("szi_vendingmachine:robSuccess")
