@@ -23,99 +23,165 @@ local hasStarted, startedRobbing, cancontinue = false, false, false
 local CurrentCoords, started = nil, nil
 local taken = 0
 
-Citizen.CreateThread(function()
-	while ESX == nil do
-		TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
-		Citizen.Wait(100)
+Citizen.CreateThread(
+	function()
+		while ESX == nil do
+			TriggerEvent(
+				"esx:getSharedObject",
+				function(obj)
+					ESX = obj
+				end
+			)
+			Citizen.Wait(100)
+		end
 	end
-end)
+)
 
-AddEventHandler('onClientResourceStart', function (resourceName)
-	if (GetCurrentResourceName() ~= resourceName) then return end
-	for k,v in pairs(Config.VendingMachineModels) do 
-	    if GetDependency("FivemTarget") then
-	        exports['fivem-target']:AddTargetModel({
-	    	    name = 'vending-robbery',
-	    	    label = 'Vending Machine',
-	    	    icon = 'fas fa-mug-hot',
-	    	    model = GetHashKey(v.prop),
-	    	    interactDist = 2.0,
-	    	    onInteract = StartRobbing,
-	    	    options = {
-	    	        {
-	    		        name = 'rob',
-	    		        label = 'Rob Vending Machine'
-	    	        },
-	    	        {
-	    		        name = 'buy',
-	    		        label = 'Buy Soda'
-	    	        }
-	    	    },
-	    	vars = {}
-	        })
-	    else
-			local machines = {}
-	        for k,v in pairs(Config.VendingMachineModels) do 
-		        table.insert(machines,GetHashKey(v.prop))
-	 	    end
-		    Wait(5)
-		    exports['bt-target']:AddTargetModel(machines, {
-		    	options = {
-		    		{
-		    			event = 'szi_vendingmachine:startRobbing',
-		    			icon = 'fas fa-mug-hot',
-		    			label = 'Rob Vending Machine',
-		    		},
+AddEventHandler(
+	"onClientResourceStart",
+	function(resourceName)
+		if (GetCurrentResourceName() ~= resourceName) then
+			return
+		end
+		for k, v in pairs(Config.VendingMachineModels) do
+			--print(v.prop)
+			if GetDependency("FivemTarget") then
+				local options = {}
+				table.insert(options, {name = "buy", label = "Use"})
+				if GetOptions("CanRob") then
+					table.insert(options, {name = "rob", label = "steal"})
+				end
+				exports["fivem-target"]:AddTargetModel(
 					{
-					    event = 'szi_vendingmachine:buy',
-					    icon = 'fas fa-mug-hot',
-					    label = 'Buy Soda',
-				    }
-		    	},
-		    	job = {'all'},
-		    	distance = 1.5
-		    })
-	    end
-	end    
-end)
+						name = "vending-machine |" .. v.prop,
+						label = "Vending Machine",
+						icon = "fas fa-mug-hot",
+						model = GetHashKey(v.prop),
+						interactDist = 2.5,
+						onInteract = StartRobbing,
+						options = options,
+						vars = {machine = v.prop, items = v.items}
+					}
+				)
+			end
+			if GetDependency("BTtarget") then
+				local options = {}
+				table.insert(
+					options,
+					{
+						event = "szi_vendingmachine:buy",
+						icon = "fas fa-mug-hot",
+						label = "Use",
+						machine = v.prop,
+						name = "vending-machine |" .. v.prop,
+						items = v.items
+					}
+				)
+				if GetOptions("CanRob") then
+					table.insert(
+						options,
+						{event = "szi_vendingmachine:startRobbing", icon = "fas fa-mug-hot", label = "Steal", machine = v.prop}
+					)
+				end
+				exports["bt-target"]:AddTargetModel(
+					{GetHashKey(v.prop)},
+					{
+						options = options,
+						job = {"all"},
+						distance = 2.5
+					}
+				)
+			end
+			if GetDependency("Qtarget") then
+				local options = {}
+				table.insert(
+					options,
+					{
+						event = "szi_vendingmachine:buy",
+						icon = "fas fa-mug-hot",
+						label = "Use",
+						machine = v.prop,
+						name = "vending-machine |" .. v.prop,
+						items = v.items
+					}
+				)
+				if GetOptions("CanRob") then
+					table.insert(
+						options,
+						{event = "szi_vendingmachine:startRobbing", icon = "fas fa-mug-hot", label = "Steal", machine = v.prop}
+				end
+				exports.qtarget:AddTargetModel(
+					{GetHashKey(v.prop)},
+					{
+						options = options,
+						distance = 2.5
+					}
+				)
+			end
+		end
+	end
+)
 
 function GetAnim(action)
-    for k,v in pairs(Config.Animations) do
-        if action == v.name then
-            return v
-        end
-    end
+	for k, v in pairs(Config.Animations) do
+		if action == v.name then
+			return v
+		end
+	end
 end
 
-function OpenVendingMenu()
+function OpenVendingMenu(Machine, items, targetName)
 	ESX.UI.Menu.CloseAll()
+	print(Machine)
+	print(items)
+	if GetDependency("MFinventory") then
+		exports["mf-inventory"]:openOtherInventory(targetName)
+	else
+		local elements = {}
+		for k, v in pairs(items) do
+			table.insert(
+				elements,
+				{
+					label = ('%s | <span style="color:green;">£%s</span>'):format(v.label, ESX.Math.GroupDigits(v.price)),
+					item = v.name,
+					price = v.price,
+					type = "slider",
+					value = 1,
+					min = 1,
+					max = 100
+				}
+			)
+		end
 
-	local elements = {}
-	for k, v in pairs(Config.VendingItems) do
-	    table.insert(elements, {label = ('%s - <span style="color:green;">%s</span>'):format(v.name, ESX.Math.GroupDigits(v.price)), item = v.name, price = v.price, type = 'slider', value = 1, min = 1, max = 100})
+		ESX.UI.Menu.Open(
+			"default",
+			GetCurrentResourceName(),
+			"vending",
+			{
+				title = "Vending Machine",
+				align = "bottom-right",
+				elements = elements
+			},
+			function(data, menu)
+				TriggerServerEvent("szi_vendingmachine:buyItem", data.current.item, data.current.price, data.current.value)
+				local buyanim = GetAnim("Buying")
+				RequestAnimDict(buyanim.dictionary)
+				while not HasAnimDictLoaded(buyanim.dictionary) do
+					Wait(10)
+				end
+				TaskPlayAnim(PlayerPedId(), buyanim.dictionary, buyanim.animation, 1.0, 1.0, -1, 1, 0, false, false, false)
+				Wait(5000)
+				ClearPedTasks(PlayerPedId())
+			end,
+			function(data, menu)
+				menu.close()
+			end
+		)
 	end
-
-	ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'vending', {
-		title    = 'Vending Machine',
-		align    = 'bottom-right',
-		elements = elements
-	}, function(data, menu)
-		TriggerServerEvent('szi_vendingmachine:buyItem', data.current.item, data.current.price, data.current.value)
-		local buyanim = GetAnim("Buying")
-		RequestAnimDict(buyanim.dictionary)
-        while not HasAnimDictLoaded(buyanim.dictionary) do
-             Wait(10)
-        end
-		TaskPlayAnim(PlayerPedId(),buyanim.dictionary,buyanim.animation,1.0,1.0,-1,1,0,false,false,false)
-		Wait(5000)
-		ClearPedTasks(PlayerPedId())
-	end, function(data, menu)
-		menu.close()
-	end)
 end
 
 function FinishRobbings(success)
-	TriggerServerEvent('szi_vendingmachine:robSuccess', success)
+	TriggerServerEvent("szi_vendingmachine:robSuccess", success)
 	FinishRobbing(success)
 	Cooldown(true)
 end
@@ -125,39 +191,42 @@ function FinishRobbing(success)
 		ClearPedTasks(PlayerPedId())
 		local buyanim = GetAnim("Buying")
 		RequestAnimDict(buyanim.dictionary)
-        while not HasAnimDictLoaded(buyanim.dictionary) do
-             Wait(10)
-        end
-		TaskPlayAnim(PlayerPedId(),buyanim.dictionary,buyanim.animation,1.0,1.0,-1,1,0,false,false,false)
+		while not HasAnimDictLoaded(buyanim.dictionary) do
+			Wait(10)
+		end
+		TaskPlayAnim(PlayerPedId(), buyanim.dictionary, buyanim.animation, 1.0, 1.0, -1, 1, 0, false, false, false)
 		cancontinue = true
-		ESX.ShowHelpNotification(_U('press_stop'))
-		exports['mythic_progbar']:Progress({
-			name = 'using',
-			duration = GetOptions("RobTime") * 1000,
-			label = 'Robbing Vending Machine',
-			useWhileDead = false,
-			canCancel = true,
-			controlDisables = {
-				disableMovement = true,
-				disableCarMovement = true,
-				disableMouse = false,
-				disableCombat = true,
-			}
-		}, function(cancelled)
-			if not cancelled then
-				TriggerServerEvent('szi_vendingmachine:success')
-				taken = taken + 1
-				FinishRobbing(true)
-			else
-				ClearPedTasks(PlayerPedId())
-				cancontinue = false
-				taken = 0
-				Cooldown(true)
+		ESX.ShowHelpNotification(_U("press_stop"))
+		exports["mythic_progbar"]:Progress(
+			{
+				name = "using",
+				duration = GetOptions("RobTime") * 1000,
+				label = "Robbing Vending Machine",
+				useWhileDead = false,
+				canCancel = true,
+				controlDisables = {
+					disableMovement = true,
+					disableCarMovement = true,
+					disableMouse = false,
+					disableCombat = true
+				}
+			},
+			function(cancelled)
+				if not cancelled then
+					TriggerServerEvent("szi_vendingmachine:success")
+					taken = taken + 1
+					FinishRobbing(true)
+				else
+					ClearPedTasks(PlayerPedId())
+					cancontinue = false
+					taken = 0
+					Cooldown(true)
+				end
 			end
-		end)
+		)
 	else
 		if not (taken < GetOptions("MaxTake")) then
-		    ESX.ShowHelpNotification(_U('max_amount'))
+			ESX.ShowHelpNotification(_U("max_amount"))
 		end
 		ClearPedTasks(PlayerPedId())
 		cancontinue = false
@@ -167,112 +236,115 @@ function FinishRobbing(success)
 end
 
 function StartRobbing(targetName, optionName, vars, entityHit)
-	if optionName and  optionName == 'rob' then
-	    if not startedRobbing then
-		    startedRobbing = true
-	        ESX.TriggerServerCallback('szi_vendingmachine:canRob', function(CanRob)
-		        if CanRob then
-					local chance = math.random(GetOptions("MinChance"), GetOptions("MaxChance"))
-				    local pos = GetEntityCoords(PlayerPedId(),  true)
-                    local s1, s2 = GetStreetNameAtCoord( pos.x, pos.y, pos.z, Citizen.PointerValueInt(), Citizen.PointerValueInt() )
-                    local street1 = GetStreetNameFromHashKey(s1)
-                    local street2 = GetStreetNameFromHashKey(s2)
-			        ClearPedTasks(PlayerPedId())
-					local robanim = GetAnim("Robbing")
-					RequestAnimDict(robanim.dictionary)
-					while not HasAnimDictLoaded(robanim.dictionary) do
-						 Wait(10)
-					end
-					TaskPlayAnim(PlayerPedId(),robanim.dictionary,robanim.animation,1.0,1.0,-1,1,0,false,false,false)
-					if chance <= GetOptions("Chance") then
-				        TriggerServerEvent('szi_vendingmachine:notifyPolice', street1, street2, pos)
-					end
+	--	print(ESX.DumpTable(vars))
+	if optionName and optionName == "rob" then
+		if not startedRobbing then
+			startedRobbing = true
+			ESX.TriggerServerCallback(
+				"szi_vendingmachine:canRob",
+				function(CanRob)
+					if CanRob then
+						local chance = math.random(GetOptions("MinChance"), GetOptions("MaxChance"))
+						local pos = GetEntityCoords(PlayerPedId(), true)
+						local s1, s2 = GetStreetNameAtCoord(pos.x, pos.y, pos.z, Citizen.PointerValueInt(), Citizen.PointerValueInt())
+						local street1 = GetStreetNameFromHashKey(s1)
+						local street2 = GetStreetNameFromHashKey(s2)
+						ClearPedTasks(PlayerPedId())
+						local robanim = GetAnim("Robbing")
+						RequestAnimDict(robanim.dictionary)
+						while not HasAnimDictLoaded(robanim.dictionary) do
+							Wait(10)
+						end
+						TaskPlayAnim(PlayerPedId(), robanim.dictionary, robanim.animation, 1.0, 1.0, -1, 1, 0, false, false, false)
+						if chance <= GetOptions("Chance") then
+							TriggerServerEvent("szi_vendingmachine:notifyPolice", street1, street2, pos)
+						end
 
-					if GetDependency("CDKeymaster") then
-					    local CustomSettings = {
-					    	settings = {
-					    		handleEnd = true;  --Send a result message if true and callback when message closed or callback immediately without showing the message
-					    		speed = 10; --pixels / second
-					    		scoreWin = 1000; --Score to win
-					    		scoreLose = -150; --Lose if this score is reached
-					    		maxTime = 60000; --sec
-					    		maxMistake = 5; --How many missed keys can there be before losing
-					    		speedIncrement = 1; --How much should the speed increase when a key hit was successful
-					    	},
-					    	keys = {"a", "w", "d", "s", "g"}; --You can hash this out if you want to use default keys in the java side.
-					    }
-    
-					    local robGame = exports['cd_keymaster']:StartKeyMaster(CustomSettings)
-					    if robGame then
-					    	FinishRobbings(true)
-					    else
-					    	FinishRobbings(false)
-					    end
-				    else 
-					    Wait(GetDependency("RobbingTime"))
-					    FinishRobbings(true)
-				    end
-		        else
-			        ESX.ShowHelpNotification(_U('cant_rob'), false, true, 2000)
-			        Wait(2000)
-			        hasStarted = false
-			        startedRobbing = false
-		        end
-	        end)
-        end
-    else
-		OpenVendingMenu()
+						if GetDependency("CDKeymaster") then
+							local robGame = exports["cd_keymaster"]:StartKeyMaster(GetDependency("CustomSettings"))
+							if robGame then
+								FinishRobbings(true)
+							else
+								FinishRobbings(false)
+							end
+						else
+							Wait(GetDependency("RobbingTime"))
+							FinishRobbings(true)
+						end
+					else
+						ESX.ShowHelpNotification(_U("cant_rob"), false, true, 2000)
+						Wait(2000)
+						hasStarted = false
+						startedRobbing = false
+					end
+				end
+			)
+		end
+	else
+		OpenVendingMenu(vars.machine, vars.items, targetName)
 	end
 end
 
-RegisterNetEvent('szi_vendingmachine:startRobbing')
-AddEventHandler('szi_vendingmachine:startRobbing', function()
-	StartRobbing(nil, 'rob')
-end)
-
-RegisterNetEvent('szi_vendingmachine:buy')
-AddEventHandler('szi_vendingmachine:buy', function()
-	OpenVendingMenu()
-end)
-
-RegisterNetEvent('szi_vendingmachine:notifyPolice')
-AddEventHandler('szi_vendingmachine:notifyPolice', function(msg)
-	if GetDependency("MythicNotify") then 
-        exports['mythic_notify']:DoHudText('error', msg)
-	else
-		ESX.ShowNotification(msg)
+RegisterNetEvent("szi_vendingmachine:startRobbing")
+AddEventHandler(
+	"szi_vendingmachine:startRobbing",
+	function()
+		StartRobbing(nil, "rob")
 	end
-end)
+)
 
-RegisterNetEvent('szi_vendingmachine:blip')
-AddEventHandler('szi_vendingmachine:blip', function(x,y,z)
-    Blip = AddBlipForCoord(x,y,z)
-    SetBlipSprite(Blip,  587)
-    SetBlipColour(Blip,  1)
-    SetBlipAlpha(Blip,  250)
-    SetBlipDisplay(Blip, 4)
-    SetBlipScale(Blip, 1.2)
-    SetBlipFlashes(Blip, true)
-    SetBlipAsShortRange(Blip,  true)
-    BeginTextCommandSetBlipName('STRING')
-    AddTextComponentString('Robbery In Progress | Vending Machine')
-    EndTextCommandSetBlipName(Blip)
-    Wait(GetOptions("BlipTimer") * 1000)
-    RemoveBlip(Blip)
-end)
+RegisterNetEvent("szi_vendingmachine:buy")
+AddEventHandler(
+	"szi_vendingmachine:buy",
+	function(data)
+		OpenVendingMenu(data.machine, data.items, data.name)
+	end
+)
+
+RegisterNetEvent("szi_vendingmachine:notifyPolice")
+AddEventHandler(
+	"szi_vendingmachine:notifyPolice",
+	function(msg)
+		if GetDependency("MythicNotify") then
+			exports["mythic_notify"]:DoHudText("error", msg)
+		else
+			ESX.ShowNotification(msg)
+		end
+	end
+)
+
+RegisterNetEvent("szi_vendingmachine:blip")
+AddEventHandler(
+	"szi_vendingmachine:blip",
+	function(x, y, z)
+		Blip = AddBlipForCoord(x, y, z)
+		SetBlipSprite(Blip, 587)
+		SetBlipColour(Blip, 1)
+		SetBlipAlpha(Blip, 250)
+		SetBlipDisplay(Blip, 4)
+		SetBlipScale(Blip, 1.2)
+		SetBlipFlashes(Blip, true)
+		SetBlipAsShortRange(Blip, true)
+		BeginTextCommandSetBlipName("STRING")
+		AddTextComponentString("Robbery In Progress | Vending Machine")
+		EndTextCommandSetBlipName(Blip)
+		Wait(GetOptions("BlipTimer") * 1000)
+		RemoveBlip(Blip)
+	end
+)
 
 function Cooldown(hasStarted)
-    local timer = GetOptions("CooldownTime")
-    while hasStarted == true do
-        Citizen.Wait(1000)
-        if timer > 0 then
-            timer = timer -1
-        end
+	local timer = GetOptions("CooldownTime")
+	while hasStarted == true do
+		Citizen.Wait(1000)
+		if timer > 0 then
+			timer = timer - 1
+		end
 
-        if timer == 1 then
+		if timer == 1 then
 			hasStarted = false
 			startedRobbing = false
-            break
-        end
-    end
+			break
+		end
+	end
 end

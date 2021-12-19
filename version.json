@@ -1,5 +1,5 @@
 {
     "version": "main",
-    "commit" : "1.2",
-    "changelog": "Updated Config & made some dependencies optional"
+    "commit" : "2.0",
+    "changelog": "Added QTarget support, rewrote item logic, added mf-inventory support, Added More SQL items, Updated README,Updated Config to be More User Friendly, Simplified Version Checker, Fixed some bugs, Made Robbing Optional, Formated Code"
 }
