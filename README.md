@@ -36,7 +36,7 @@ git clone https://github.com/Sub-Zero-Interactive/szi_vendingmachine [szi]/szi_v
 - Add this in your server.cfg :
 
 ```
-ensure szi_vendingrobbery
+ensure szi_vendingmachine
 ```
 
 # Legal
