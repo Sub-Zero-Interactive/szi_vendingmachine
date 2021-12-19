@@ -9,7 +9,12 @@ Config.RequiredItems = {
   }
 }
 
-Config.RemoveItems = {}
+Config.RemoveItems = {
+  {
+    name = "lockpick", -- Item that will be removed when stolen
+    quantity = 1
+  }
+}
 
 Config.Rewards = {
   {
@@ -20,13 +25,13 @@ Config.Rewards = {
 
 Config.Dependencies = {
   {
-    FivemTarget = true -- Set to 'true' if you are using fivem-target or 'false' for bt-target
+    FivemTarget = true -- Set to 'true' if you are using fivem-target
   },
   {
-    BTtarget = false -- Set to 'true' if you are using fivem-target or 'false' for bt-target
+    BTtarget = false -- Set to 'true' if you are using bt-target
   },
   {
-    Qtarget = false -- Set to 'true' if you are using fivem-target or 'false' for bt-target
+    Qtarget = false -- Set to 'true' if you are using Qtarget
   },
   {
     MythicNotify = false -- Set to 'true' if you are using mythic_notify
@@ -54,11 +59,11 @@ Config.Dependencies = {
 
 Config.Options = {
   {
-    CanRob = false,
-    PoliceRequired = 1, -- Amount of Police required to hack an ATM
+    CanRob = false, -- set to 'true' if you want to enable robbing vending machine's
+    PoliceRequired = 1, -- Amount of Police required to hack a vending machine
     BlipTimer = 45, -- Blip timer  until removed in seconds
     PhoneModel = -1038739674, -- The Phone model prop when hacking
-    CooldownTime = 300, -- Cooldown in Seconds before someone can rob an ATM
+    CooldownTime = 300, -- Cooldown in Seconds before someone can rob a vending machine
     MaxChance = 100, -- Max number the chance can go up to (default 100)
     Chance = 100, -- The % Chance of notifying police when a robbery is started (25 = 25%)
     MinChance = 1, -- Minimum number the chance can be (Keep at 1 unless you know what you are doing)
@@ -422,6 +427,7 @@ Config.VendingMachineModels = {
       }
     },
 --]]
+
 GetDependency = function(Dependency)
   for k, v in pairs(Config.Dependencies) do
     if v[Dependency] then

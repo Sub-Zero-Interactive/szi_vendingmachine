@@ -1,7 +1,8 @@
 Locales['fi'] = {
-    ['cant_hack'] = '~r~Et voi ryöstää tätä',
-    ['press_stop'] = 'Paina [DEL] lopettaaksesi',
-    ['max_amount'] = '~r~Saavutettu enimmäismäärä',
-    ['min_police'] = 'Kaupungissa on oltava vähintään ~b~%s poliisia~s~ ryöstettäväksi.',
-    ['no_room'] = '~r~Et voi pitää ryöstöä',
+    ['cant_rob'] = '~r~Tätä ei voi ryöstää',
+    ['press_stop'] = 'Paina [DEL] pysäyttääksesi',
+    ['max_amount'] = '~r~Saavutettu maksimimäärä',
+    ['min_poliisi'] = 'Kaupungissa on oltava vähintään ~b~%s poliisia~s~, jotta voit ryöstää.',
+    ['no_room'] = '~r~Et voi pitää saalista',
+    ['bought'] = 'Ostit juuri ~y~%sx~s~ ~b~%s~s~ ~r~$%s~s~:llä',
 }
