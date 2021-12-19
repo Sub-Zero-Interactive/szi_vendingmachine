@@ -124,33 +124,28 @@ Citizen.CreateThread(function()
 				if rv.version == v.version then
 					if rv.commit > v.commit then
 						print(([[
-								^1----------------------------------------------------------------------
-								^1WARNING: YOUR SZI_VENDINGMACHINE IS OUTDATED!
-								^1COMMIT UPDATE: ^5%s AVAILABLE
-								^1DOWNLOAD:^5 https://github.com/Sub-Zero-Interactive/szi_vendingmachine
-								^1CHANGELOG:^5 %s
-								^1-----------------------------------------------------------------------
-								^0
-						]]):format(rv.commit, rv.changelog))
+^1----------------------------------------------------------------------
+^1WARNING: YOUR SZI_VENDINGMACHINE IS OUTDATED!
+^1COMMIT UPDATE: ^5%s AVAILABLE
+^1DOWNLOAD:^5 https://github.com/Sub-Zero-Interactive/szi_vendingmachine
+^1CHANGELOG:^5 %s
+^1-----------------------------------------------------------------------^0 ]]):format(rv.commit, rv.changelog))
 					else
 						print(([[
-								^8-------------------------------------------------------
-								^2Your szi_vendingmachine is the latest version!
-								^5Version:^0 %s
-								^2Like This Script? View More at ModIT.Store !
-								^8-------------------------------------------------------^0
-						]]):format(rv.commit))
+^8-------------------------------------------------------
+^2Your szi_vendingmachine is the latest version!
+^5Version:^0 %s
+^2Like This Script? View More at ModIT.Store !
+^8-------------------------------------------------------^0	]]):format(rv.commit))
 					end
 				else
 					print(([[
-							^1----------------------------------------------------------------------
-							^1URGENT: YOUR SZI_VENDINGMACHINE IS OUTDATATED!!!
-							^1COMMIT UPDATE: ^5%s AVAILABLE
-							^1DOWNLOAD:^5 https://github.com/Sub-Zero-Interactive/szi_vendingmachine
-							^1CHANGELOG:^5 %s
-							^1-----------------------------------------------------------------------
-							^0
-					]]):format(rv.commit, rv.changelog ))
+^1----------------------------------------------------------------------
+^1URGENT: YOUR SZI_VENDINGMACHINE IS OUTDATATED!!!
+^1COMMIT UPDATE: ^5%s AVAILABLE
+^1DOWNLOAD:^5 https://github.com/Sub-Zero-Interactive/szi_vendingmachine
+^1CHANGELOG:^5 %s
+^1-----------------------------------------------------------------------^0 ]]):format(rv.commit, rv.changelog ))
 				end
 			else
 				print("[^1ERROR^0] szi_vendingmachine unable to check version!")
