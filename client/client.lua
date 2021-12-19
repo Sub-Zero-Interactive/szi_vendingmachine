@@ -108,7 +108,7 @@ AddEventHandler(
 				if GetOptions("CanRob") then
 					table.insert(
 						options,
-						{event = "szi_vendingmachine:startRobbing", icon = "fas fa-mug-hot", label = "Steal", machine = v.prop}
+						{event = "szi_vendingmachine:startRobbing", icon = "fas fa-mug-hot", label = "Steal", machine = v.prop})
 				end
 				exports.qtarget:AddTargetModel(
 					{GetHashKey(v.prop)},
