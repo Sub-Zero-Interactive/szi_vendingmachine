@@ -7,9 +7,8 @@ Like This Script? Check out more like it at [ModIT](https://modit.store) !
 - [es_extended](https://github.com/esx-framework/es_extended/tree/legacy)
 - [mythic_progbar](https://github.com/HalCroves/mythic_progbar) (Only required if using the `CanRob` Option)
 
-`ATLEAST 1 OF THE 3 BELOW`
+`ATLEAST 1 OF THE 2 BELOW`
 - [fivem-target](https://github.com/meta-hub/fivem-target) 
-- [bt-target](https://github.com/brentN5/bt-target)
 - [Qtarget](https://github.com/overextended/qtarget)
 
 ## Optional
