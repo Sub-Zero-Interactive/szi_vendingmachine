@@ -28,9 +28,6 @@ Config.Dependencies = {
     FivemTarget = true -- Set to 'true' if you are using fivem-target
   },
   {
-    BTtarget = false -- Set to 'true' if you are using bt-target
-  },
-  {
     Qtarget = false -- Set to 'true' if you are using Qtarget
   },
   {
