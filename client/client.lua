@@ -60,33 +60,6 @@ AddEventHandler('onClientResourceStart', function(resourceName)
 			})
 		end
 
-		if GetDependency("BTtarget") then
-			local options = {}
-			table.insert(options, {
-				event = "szi_vendingmachine:buy",
-				icon = "fas fa-mug-hot",
-				label = "Use",
-				machine = v.prop,
-				name = "vending-machine |" .. v.prop,
-				items = v.items
-			})
-
-			if GetOptions("CanRob") then
-				table.insert(options, {
-					event = "szi_vendingmachine:startRobbing", 
-					icon = "fas fa-mug-hot", 
-					label = "Steal", 
-					machine = v.prop}
-				)
-			end
-
-			exports["bt-target"]:AddTargetModel({GetHashKey(v.prop)}, {
-				options = options,
-				job = {"all"},
-				distance = 2.5
-			})
-		end
-
 		if GetDependency("Qtarget") then
 			local options = {}
 			table.insert(options, {
